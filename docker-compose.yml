@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  db:
+    container_name: db
+    image: postgres:12
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - DB_NAME=postgres
+    ports:
+      - 5432:5432
