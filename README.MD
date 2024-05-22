@@ -1,11 +1,12 @@
 # Library Management System
 
-# In the library-management-service we combine Scala with technologies such as 
-# PostgreSQL, Flyway, Doobie, Ciris, Cats IO, HTTPS, ZIO-JSON, and Cake Pattern.
+## In the library-management-service we combine Scala with technologies such as 
+## PostgreSQL, Flyway, Doobie, Ciris, Cats IO, HTTPS, ZIO-JSON, and Cake Pattern.
 
-# Library Domain Model(UML Class Diagram Example): https://www.uml-diagrams.org/library-domain-uml-class-diagram-example.html
+### Library Domain Model(UML Class Diagram Example) 
+https://www.uml-diagrams.org/library-domain-uml-class-diagram-example.html
 
-## Run the postgres docker image(from the library-management-system/docker-compose.yml path) before starting the application
+### Run the postgres docker image(from the library-management-system/docker-compose.yml path) before starting the application
 docker compose up
 
 #### Create book:
