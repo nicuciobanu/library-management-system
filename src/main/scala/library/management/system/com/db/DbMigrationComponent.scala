@@ -16,6 +16,5 @@ trait DbMigrationComponent {
           .load()
           .migrate()
       }
-
   }
 }

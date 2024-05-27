@@ -8,7 +8,7 @@ import java.time.LocalDate
 import java.util.UUID
 import zio.json.{DeriveJsonDecoder, DeriveJsonEncoder, JsonDecoder, JsonEncoder}
 
-object Models {
+object Model {
 
   sealed trait Language extends Product with Serializable {
     def name: String
@@ -33,11 +33,11 @@ object Models {
   object Language {
     def valueOf(name: String): Option[Language] = name match {
       case value if value.equals("English") => Some(English)
-      case value if value.equals("French") => Some(French)
-      case value if value.equals("German") => Some(German)
+      case value if value.equals("French")  => Some(French)
+      case value if value.equals("German")  => Some(German)
       case value if value.equals("Spanish") => Some(Spanish)
       case value if value.equals("Italian") => Some(Italian)
-      case _ => None
+      case _                                => None
     }
 
     implicit val decoder: JsonDecoder[Language] = DeriveJsonDecoder.gen[Language]
@@ -71,10 +71,10 @@ object Models {
       case value if value.equals("Paperback") => Some(Paperback)
       case value if value.equals("Hardcover") => Some(Hardcover)
       case value if value.equals("Audiobook") => Some(Audiobook)
-      case value if value.equals("AudioCd") => Some(AudioCd)
-      case value if value.equals("Mp3Cd") => Some(Mp3Cd)
-      case value if value.equals("Pdf") => Some(Pdf)
-      case _ => None
+      case value if value.equals("AudioCd")   => Some(AudioCd)
+      case value if value.equals("Mp3Cd")     => Some(Mp3Cd)
+      case value if value.equals("Pdf")       => Some(Pdf)
+      case _                                  => None
     }
 
     implicit val decoder: JsonDecoder[Format] = DeriveJsonDecoder.gen[Format]
@@ -99,46 +99,48 @@ object Models {
       case value if value.equals("Active") => Some(Active)
       case value if value.equals("Frozen") => Some(Frozen)
       case value if value.equals("Closed") => Some(Closed)
-      case _ => None
+      case _                               => None
     }
 
     implicit val decoder: JsonDecoder[AccountStatus] = DeriveJsonDecoder.gen[AccountStatus]
     implicit val encoder: JsonEncoder[AccountStatus] = DeriveJsonEncoder.gen[AccountStatus]
   }
 
-  case class Book(isbn: String,
-                  name: String,
-                  subject: String,
-                  overview: String,
-                  publisher: String,
-                  publicationDate: LocalDate,
-                  lang: Language,
+  case class Book(
+      isbn: String,
+      name: String,
+      subject: String,
+      overview: String,
+      publisher: String,
+      publicationDate: LocalDate,
+      lang: Language
   )
 
   object Book {
-    implicit val decoder: JsonDecoder[Book] = DeriveJsonDecoder.gen[Book]
-    implicit val encoder: JsonEncoder[Book] = DeriveJsonEncoder.gen[Book]
+    implicit val decoder: JsonDecoder[Book]             = DeriveJsonDecoder.gen[Book]
+    implicit val encoder: JsonEncoder[Book]             = DeriveJsonEncoder.gen[Book]
     implicit def entityEncoder: EntityEncoder[IO, Book] = jsonEncoderOf[IO, Book]
   }
 
-  case class BookItem(barcode: String,
-                      tag: UUID,
-                      isbn: String,
-                      subject: String,
-                      title: String,
-                      isReferenceOnly: Boolean,
-                      lang: Language,
-                      numberOfPages: Int,
-                      format: Format,
-                      borrowed: LocalDate,
-                      loanPeriod: Int,
-                      dueDate: LocalDate,
-                      isOverdue: Boolean,
+  case class BookItem(
+      barcode: String,
+      tag: UUID,
+      isbn: String,
+      subject: String,
+      title: String,
+      isReferenceOnly: Boolean,
+      lang: Language,
+      numberOfPages: Int,
+      format: Format,
+      borrowed: LocalDate,
+      loanPeriod: Int,
+      dueDate: LocalDate,
+      isOverdue: Boolean
   )
 
   object BookItem {
-    implicit val decoder: JsonDecoder[BookItem] = DeriveJsonDecoder.gen[BookItem]
-    implicit val encoder: JsonEncoder[BookItem] = DeriveJsonEncoder.gen[BookItem]
+    implicit val decoder: JsonDecoder[BookItem]             = DeriveJsonDecoder.gen[BookItem]
+    implicit val encoder: JsonEncoder[BookItem]             = DeriveJsonEncoder.gen[BookItem]
     implicit def entityEncoder: EntityEncoder[IO, BookItem] = jsonEncoderOf[IO, BookItem]
   }
 

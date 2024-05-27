@@ -6,14 +6,15 @@ import doobie.implicits._
 import doobie.postgres.implicits._
 import MetaMappings._
 import library.management.system.com.model.Exceptions._
-import library.management.system.com.model.Models.Book
+import library.management.system.com.model.Model.Book
+import org.typelevel.log4cats.Logger
 
 trait BookRepositoryComponent {
 
   val bookRepository: BookRepository
   class BookRepository(resource: Resource[IO, Transactor[IO]]) {
 
-    def createBook(book: Book): IO[Either[BookCreateError, String]] = {
+    def createBook(book: Book)(implicit logger: Logger[IO]): IO[Either[BookCreateError, String]] = {
       val createQuery =
         sql"""
           INSERT INTO book(
@@ -33,9 +34,7 @@ trait BookRepositoryComponent {
           ${book.publicationDate},
           ${book.lang}
           )
-           """
-          .stripMargin
-          .update
+           """.stripMargin.update
           .withUniqueGeneratedKeys[String]("isbn")
 
       resource.use { tr =>
@@ -43,14 +42,17 @@ trait BookRepositoryComponent {
           .transact(tr)
           .attempt
           .flatMap {
-            case Left(value) =>
-              IO.pure(Left(BookCreateError(s"Errors while creating book ${book.isbn} ${value.getMessage}")))
+            case Left(error) =>
+              logger.error(
+                s"BookRepositoryComponent :: while creating the book with isbn: ${book.isbn} and subject: ${book.subject} an error were thrown: $error!!!"
+              )
+              IO.pure(Left(BookCreateError(s"Errors while creating book ${book.isbn} ${error.getMessage}")))
             case Right(value) => IO.pure(Right(value))
           }
       }
     }
 
-    def getBook(isbn: String, subject: String): IO[Either[SearchError, Book]] = {
+    def getBook(isbn: String, subject: String)(implicit logger: Logger[IO]): IO[Either[SearchError, Book]] = {
       val getQuery =
         sql"""
              SELECT
@@ -63,8 +65,7 @@ trait BookRepositoryComponent {
              lang
              FROM book
              WHERE isbn = $isbn AND subject = $subject
-           """
-          .stripMargin
+           """.stripMargin
           .query[Book]
           .option
 
@@ -74,7 +75,11 @@ trait BookRepositoryComponent {
           .attempt
           .flatMap {
             case Right(Some(value)) => IO.pure(Right(value))
-            case _ =>
+            case Right(None)        => IO.pure(Left(BookNotFoundError(s"Book with isbn $isbn and subject $subject not found.")))
+            case Left(error) =>
+              logger.error(
+                s"BookRepositoryComponent :: while getting the book with isbn: $isbn and subject: $subject an error were thrown: $error!!!"
+              )
               IO.pure(Left(BookNotFoundError(s"Book with isbn $isbn and subject $subject not found.")))
           }
       }

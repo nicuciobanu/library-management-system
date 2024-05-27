@@ -1,15 +1,16 @@
-# Library Management System
+## Library Management System
 
-## In the library-management-service we combine Scala with technologies such as 
-## PostgreSQL, Flyway, Doobie, Ciris, Cats IO, HTTPS, ZIO-JSON, and Cake Pattern.
+- In the library-management-service we combine Scala with technologies such as 
+- PostgreSQL, Flyway, Doobie, Ciris, Cats IO, HTTP4S, ZIO-JSON, and Cake Pattern.
 
-### Library Domain Model(UML Class Diagram Example) 
-https://www.uml-diagrams.org/library-domain-uml-class-diagram-example.html
+Library Domain Model(UML Class Diagram Example):
+- https://www.uml-diagrams.org/library-domain-uml-class-diagram-example.html
 
-### Run the postgres docker image(from the library-management-system/docker-compose.yml path) before starting the application
-docker compose up
+Run the docker image before starting the application:
+- docker compose up
 
-#### Create book:
+### API
+Create book:
 curl --location 'http://localhost:8080/api/v1/books' \
 --header 'Content-Type: application/json' \
 --data '{
@@ -22,11 +23,11 @@ curl --location 'http://localhost:8080/api/v1/books' \
 "lang":"English"
 }'
 
-### Get book:
+Get book:
 curl --location 'http://localhost:8080/api/v1/books/6bcbca1e-efd3-411d-9f7c-14b872444fce/Fantasy' \
 --data ''
 
-### Create book item:
+Create book item:
 curl --location 'http://localhost:8080/api/v1/items' \
 --header 'Content-Type: application/json' \
 --data '{
@@ -43,5 +44,27 @@ curl --location 'http://localhost:8080/api/v1/items' \
 "dueDate": "2024-05-16"
 }'
 
-### Get book item:
+Get book item:
 curl --location 'http://localhost:8080/api/v1/items/6bcbca1e-efd3-411d-9f7c-14b872444fcd/6baa3493-0564-40b7-9751-b2658b141a61'
+
+### Kafka
+Create "library-management-item-extern-topic" topic:
+- docker-compose exec kafka kafka-topics.sh --create --topic library-management-item-extern-topic --partitions 1 --replication-factor 1 --bootstrap-server kafka:9092
+
+Create "library-management-item-intern-topic" topic:
+- docker-compose exec kafka kafka-topics.sh --create --topic library-management-item-intern-topic --partitions 1 --replication-factor 1 --bootstrap-server kafka:9092
+
+Stop docker containers:
+- docker stop library-management-system-kafka-1 library-management-system-zookeeper-1 db
+
+Remove docker containers:
+- docker rm library-management-system-kafka-1 library-management-system-zookeeper-1 db
+
+Add the messages to the "library-management-item-extern-topic" topic:
+- docker-compose exec kafka kafka-console-producer.sh --topic library-management-item-extern-topic --broker-list kafka:9092
+
+Read the messages from the "library-management-item-extern-topic" topic: 
+- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-extern-topic --from-beginning --bootstrap-server kafka:9092
+
+Read the messages from the "library-management-item-intern-topic" topic:
+- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-intern-topic --from-beginning --bootstrap-server kafka:9092

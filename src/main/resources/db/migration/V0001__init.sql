@@ -28,14 +28,14 @@ CREATE TABLE IF NOT EXISTS book_item
     PRIMARY KEY(barcode, tag)
 );
 
-CREATE TABLE author
+CREATE TABLE IF NOT EXISTS author
 (
     name TEXT PRIMARY KEY,
     biography TEXT NOT NULL,
     publication_date Date NOT NULL
 );
 
-CREATE TABLE account
+CREATE TABLE IF NOT EXISTS account
 (
     isbn UUID PRIMARY KEY,
     history TEXT [] NOT NULL,
@@ -43,19 +43,19 @@ CREATE TABLE account
     status TEXT NOT NULL
 );
 
-CREATE TABLE library
+CREATE TABLE IF NOT EXISTS library
 (
     name TEXT PRIMARY KEY,
     address TEXT NOT NULL
 );
 
-CREATE TABLE patron
+CREATE TABLE IF NOT EXISTS patron
 (
     name TEXT PRIMARY KEY,
     address TEXT NOT NULL
 );
 
-CREATE TABLE librarian
+CREATE TABLE IF NOT EXISTS librarian
 (
     name TEXT PRIMARY KEY,
     address TEXT NOT NULL,

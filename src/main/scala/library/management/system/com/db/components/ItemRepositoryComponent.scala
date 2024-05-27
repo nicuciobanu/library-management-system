@@ -6,7 +6,8 @@ import doobie.implicits._
 import doobie.postgres.implicits._
 import MetaMappings._
 import library.management.system.com.model.Exceptions.{CreateError, ItemCreateError, ItemNotFoundError, SearchError}
-import library.management.system.com.model.Models.BookItem
+import library.management.system.com.model.Model.BookItem
+import org.typelevel.log4cats.Logger
 
 import java.util.UUID
 
@@ -15,7 +16,7 @@ trait ItemRepositoryComponent {
   val itemRepository: ItemRepository
 
   class ItemRepository(resource: Resource[IO, Transactor[IO]]) {
-    def createItem(item: BookItem): IO[Either[CreateError, String]] = {
+    def createItem(item: BookItem)(implicit logger: Logger[IO]): IO[Either[CreateError, String]] = {
       val createQuery =
         sql"""
               INSERT INTO book_item(
@@ -47,9 +48,7 @@ trait ItemRepositoryComponent {
                 ${item.dueDate},
                 ${item.isOverdue}
               )
-           """
-          .stripMargin
-          .update
+           """.stripMargin.update
           .withUniqueGeneratedKeys[String]("barcode")
 
       resource.use { tr =>
@@ -58,19 +57,22 @@ trait ItemRepositoryComponent {
           .attempt
           .flatMap {
             case Right(barcode) => IO.pure(Right(barcode))
-            case _ =>
+            case Left(error) =>
+              logger.error(
+                s"ItemRepositoryComponent :: while creating the book with barcode: ${item.barcode} and tag: ${item.tag} an error were thrown: $error!!!"
+              )
               IO.pure(
                 Left(
                   ItemCreateError(
-                    s"Error while creating book item with barcode ${item.barcode} and tag ${item.tag}",
-                  ),
-                ),
+                    s"Error while creating book item with barcode ${item.barcode} and tag ${item.tag}"
+                  )
+                )
               )
           }
       }
     }
 
-    def getItem(barcode: String, tag: UUID): IO[Either[SearchError, BookItem]] = {
+    def getItem(barcode: String, tag: UUID)(implicit logger: Logger[IO]): IO[Either[SearchError, BookItem]] = {
       val getQuery =
         sql"""
              SELECT
@@ -89,8 +91,7 @@ trait ItemRepositoryComponent {
                 is_overdue
              FROM book_item
              WHERE barcode = $barcode AND tag = $tag
-           """
-          .stripMargin
+           """.stripMargin
           .query[BookItem]
           .option
 
@@ -100,7 +101,11 @@ trait ItemRepositoryComponent {
           .attempt
           .flatMap {
             case Right(Some(value)) => IO.pure(Right(value))
-            case _ =>
+            case Right(None)        => IO.pure(Left(ItemNotFoundError(s"Book item with barcode $barcode and tag $tag not found.")))
+            case Left(error) =>
+              logger.error(
+                s"ItemRepositoryComponent :: while getting the book item with barcode: $barcode and subject: $tag an error were thrown: $error!!!"
+              )
               IO.pure(Left(ItemNotFoundError(s"Book item with barcode $barcode and tag $tag not found.")))
           }
       }
