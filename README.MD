@@ -6,7 +6,7 @@
 Library Domain Model(UML Class Diagram Example):
 - https://www.uml-diagrams.org/library-domain-uml-class-diagram-example.html
 
-Run the docker image before starting the application:
+Run the docker image and create the topics before starting the application:
 - docker compose up
 
 ### API
@@ -62,6 +62,22 @@ Remove docker containers:
 
 Add the messages to the "library-management-item-extern-topic" topic:
 - docker-compose exec kafka kafka-console-producer.sh --topic library-management-item-extern-topic --broker-list kafka:9092
+
+"""
+{
+"barcode": "6bcbca1e-efd3-411d-9f7c-14b872444fcc",
+"tag": "6baa3493-0564-40b7-9751-b2658b141a61",
+"isbn": "6bcbca1e-efd3-411d-9f7c-14b872444fce",
+"subject": "Fantasy",
+"title": "Zack Snyder's Justice League",
+"isReferenceOnly": false,
+"lang": "English",
+"numberOfPages": "370",
+"format": "Paperback",
+"borrowed": "2024-05-01",
+"dueDate": "2024-05-16"
+}
+"""
 
 Read the messages from the "library-management-item-extern-topic" topic: 
 - docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-extern-topic --from-beginning --bootstrap-server kafka:9092

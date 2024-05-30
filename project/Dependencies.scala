@@ -32,7 +32,6 @@ object Dependencies {
     // http4s
     "org.http4s"            %% "http4s-blaze-server"        % Http4sVersion,
     "org.http4s"            %% "http4s-dsl"                 % Http4sVersion,
-    "org.typelevel"         %% "log4cats-slf4j"             % "2.7.0",
 
     // fs2-kafka
     "com.github.fd4s"       %% "fs2-kafka"                  % "3.5.1",
