@@ -44,10 +44,12 @@ trait BookRepositoryComponent {
           .flatMap {
             case Left(error) =>
               logger.error(
-                s"BookRepositoryComponent :: while creating the book with isbn: ${book.isbn} and subject: ${book.subject} an error were thrown: $error!!!"
+                s"While creating the book with isbn: ${book.isbn} and subject: ${book.subject} an error were thrown: $error!!!"
               )
               IO.pure(Left(BookCreateError(s"Errors while creating book ${book.isbn} ${error.getMessage}")))
-            case Right(value) => IO.pure(Right(value))
+            case Right(value) =>
+              logger.info(s"Book created with success with isbn: ${book.isbn} and subject: ${book.subject}.")
+              IO.pure(Right(value))
           }
       }
     }
@@ -74,12 +76,22 @@ trait BookRepositoryComponent {
           .transact(tr)
           .attempt
           .flatMap {
-            case Right(Some(value)) => IO.pure(Right(value))
-            case Right(None)        => IO.pure(Left(BookNotFoundError(s"Book with isbn $isbn and subject $subject not found.")))
+            case Right(Some(value)) =>
+              logger.info(s"Book found by isbn: $isbn and $subject.").toResource
+              IO.pure(Right(value))
+            case Right(None) =>
+              logger
+                .warn(
+                  s"No book found with isbn: $isbn and subject: $subject!!!"
+                )
+                .toResource
+              IO.pure(Left(BookNotFoundError(s"Book with isbn $isbn and subject $subject not found.")))
             case Left(error) =>
-              logger.error(
-                s"BookRepositoryComponent :: while getting the book with isbn: $isbn and subject: $subject an error were thrown: $error!!!"
-              )
+              logger
+                .error(
+                  s"While getting the book with isbn: $isbn and subject: $subject an error were thrown: $error!!!"
+                )
+                .toResource
               IO.pure(Left(BookNotFoundError(s"Book with isbn $isbn and subject $subject not found.")))
           }
       }

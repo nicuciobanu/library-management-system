@@ -56,11 +56,15 @@ trait ItemRepositoryComponent {
           .transact(tr)
           .attempt
           .flatMap {
-            case Right(barcode) => IO.pure(Right(barcode))
+            case Right(barcode) =>
+              logger.info(s"Book item created with success ${item.tag}!").toResource
+              IO.pure(Right(barcode))
             case Left(error) =>
-              logger.error(
-                s"ItemRepositoryComponent :: while creating the book with barcode: ${item.barcode} and tag: ${item.tag} an error were thrown: $error!!!"
-              )
+              logger
+                .error(
+                  s"ItemRepositoryComponent :: while creating the book with barcode: ${item.barcode} and tag: ${item.tag} an error were thrown: $error!!!"
+                )
+                .toResource
               IO.pure(
                 Left(
                   ItemCreateError(
@@ -100,11 +104,17 @@ trait ItemRepositoryComponent {
           .transact(tr)
           .attempt
           .flatMap {
-            case Right(Some(value)) => IO.pure(Right(value))
-            case Right(None)        => IO.pure(Left(ItemNotFoundError(s"Book item with barcode $barcode and tag $tag not found.")))
+            case Right(Some(value)) =>
+              logger.info(s"Get item by barcode: $barcode and tag: $tag.")
+              IO.pure(Right(value))
+            case Right(None) =>
+              logger.warn(
+                s"Bo book item found with barcode: $barcode and subject: $tag!!!"
+              )
+              IO.pure(Left(ItemNotFoundError(s"Book item with barcode $barcode and tag $tag not found.")))
             case Left(error) =>
               logger.error(
-                s"ItemRepositoryComponent :: while getting the book item with barcode: $barcode and subject: $tag an error were thrown: $error!!!"
+                s"While getting the book item with barcode: $barcode and subject: $tag an error were thrown: $error!!!"
               )
               IO.pure(Left(ItemNotFoundError(s"Book item with barcode $barcode and tag $tag not found.")))
           }

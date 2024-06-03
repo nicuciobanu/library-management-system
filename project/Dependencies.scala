@@ -6,7 +6,7 @@ object Dependencies {
   val Http4sVersion = "0.23.16"
   val ZioJson = "0.6.2"
   val CirceVersion = "0.14.7"
-  val LoggerVersion = "2.7.0"
+  val LoggerVersion = "1.4.12"
 
   val initialization: Seq[ModuleID] = Seq(
     // cats
@@ -37,11 +37,6 @@ object Dependencies {
     "com.github.fd4s"       %% "fs2-kafka"                  % "3.5.1",
 
     // logging
-  "org.typelevel"           %% "log4cats-core"              % LoggerVersion % "runtime",
-  "org.typelevel"           %% "log4cats-slf4j"             % LoggerVersion % "runtime",
-
-
-    "org.apache.logging.log4j" % "log4j-core"               % "2.22.1",
-  "org.apache.logging.log4j" % "log4j-slf4j2-impl"          % "2.22.1" % Test
+    "ch.qos.logback"         % "logback-classic"            % LoggerVersion % Runtime
   )
 }

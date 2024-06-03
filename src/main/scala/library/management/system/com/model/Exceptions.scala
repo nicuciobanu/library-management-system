@@ -52,4 +52,8 @@ object Exceptions {
 
     override val errorMessage: String = this.toString
   }
+
+  case class PublishError(throwable: Throwable) extends Exception with BookManagementError {
+    override def toString: String = s"Kafka publisher error: ${throwable.getMessage}"
+  }
 }

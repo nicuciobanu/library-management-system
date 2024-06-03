@@ -49,10 +49,10 @@ curl --location 'http://localhost:8080/api/v1/items/6bcbca1e-efd3-411d-9f7c-14b8
 
 ### Kafka
 Create "library-management-item-extern-topic" topic:
-- docker-compose exec kafka kafka-topics.sh --create --topic library-management-item-extern-topic --partitions 1 --replication-factor 1 --bootstrap-server kafka:9092
+- docker-compose exec kafka kafka-topics.sh --create --topic library-management-item-extern-topic --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092
 
 Create "library-management-item-intern-topic" topic:
-- docker-compose exec kafka kafka-topics.sh --create --topic library-management-item-intern-topic --partitions 1 --replication-factor 1 --bootstrap-server kafka:9092
+- docker-compose exec kafka kafka-topics.sh --create --topic library-management-item-intern-topic --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092
 
 Stop docker containers:
 - docker stop library-management-system-kafka-1 library-management-system-zookeeper-1 db
@@ -61,26 +61,28 @@ Remove docker containers:
 - docker rm library-management-system-kafka-1 library-management-system-zookeeper-1 db
 
 Add the messages to the "library-management-item-extern-topic" topic:
-- docker-compose exec kafka kafka-console-producer.sh --topic library-management-item-extern-topic --broker-list kafka:9092
+- docker-compose exec kafka kafka-console-producer.sh --topic library-management-item-extern-topic --broker-list localhost:9092
 
 """
 {
-"barcode": "6bcbca1e-efd3-411d-9f7c-14b872444fcc",
-"tag": "6baa3493-0564-40b7-9751-b2658b141a61",
-"isbn": "6bcbca1e-efd3-411d-9f7c-14b872444fce",
-"subject": "Fantasy",
-"title": "Zack Snyder's Justice League",
-"isReferenceOnly": false,
-"lang": "English",
-"numberOfPages": "370",
-"format": "Paperback",
-"borrowed": "2024-05-01",
-"dueDate": "2024-05-16"
+"barcode" : "6bcbca1e-efd3-411d-9f7c-14b872444fcz",
+"tag" : "6baa3493-0564-40b7-9751-b2658b141a61",
+"isbn" : "6bcbca1e-efd3-411d-9f7c-14b872444fce",
+"subject" : "Fantasy",
+"title" : "Zack Snyder's Justice League",
+"isReferenceOnly" : "false",
+"lang" : "English",
+"numberOfPages" : "370",
+"format" : "Paperback",
+"borrowed" : "2024-05-01",
+"loanPeriod" : "15",
+"dueDate" : "2024-05-16",
+"isOverdue" : "true"
 }
 """
 
 Read the messages from the "library-management-item-extern-topic" topic: 
-- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-extern-topic --from-beginning --bootstrap-server kafka:9092
+- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-extern-topic --from-beginning --bootstrap-server localhost:9092
 
 Read the messages from the "library-management-item-intern-topic" topic:
-- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-intern-topic --from-beginning --bootstrap-server kafka:9092
+- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-intern-topic --from-beginning --bootstrap-server localhost:9092

@@ -23,34 +23,31 @@ object Main
     with BookServiceComponent
     with BookRoutesComponent
     with MessageConsumerComponent
-    with MessageProducerComponent
-    with MessageServiceComponent {
-  implicit def logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+    with MessageProducerComponent {
+
+  implicit lazy val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
 
   override val config: Settings                 = new Settings {}
   override val migration: Migration             = new Migration {}
   override val transactor: DbTransactor         = new DbTransactor {}
-  private val dbTransactor                      = transactor.init(config.appConfig.load[IO].map(_.database))
+  private val dbTransactor                      = transactor.init(config.appConfig.load[IO].map(_.database))(logger)
   override val bookRepository: BookRepository   = new BookRepository(dbTransactor)
   override val itemRepository: ItemRepository   = new ItemRepository(dbTransactor)
   override val bookService: BookService         = new BookService {}
   override val bookRoutes: BookRoutes           = new BookRoutes {}
   override val messageConsumer: MessageConsumer = new MessageConsumer {}
   override val messageProducer: MessageProducer = new MessageProducer {}
-  override val queueService: MessageService     = new MessageService {}
 
   override def run(args: List[String]): IO[ExitCode] =
     for {
       appConfig <- config.appConfig.load[IO]
-      api   = appConfig.api
-      db    = appConfig.database
-      kafka = appConfig.queue
+      api = appConfig.api
+      db  = appConfig.database
       _ <- migration.migrate(db.url, db.user, db.password)
-      routes = bookRoutes.routes
+      routes = bookRoutes.routes(logger)
       application: Kleisli[IO, Request[IO], Response[IO]] = Router(
         "/api/v1" -> routes
       ).orNotFound
-      _ <- queueService.process(kafka).compile.drain
       server <- BlazeServerBuilder[IO]
         .bindHttp(api.port, api.host)
         .withHttpApp(application)
