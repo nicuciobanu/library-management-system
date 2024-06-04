@@ -15,7 +15,6 @@ trait MessageProducerComponent {
       val settings =
         ProducerSettings[IO, String, String]
           .withBootstrapServers(config.server)
-          .withProperty("topic.creation.enable", "true")
 
       KafkaProducer
         .resource(settings)

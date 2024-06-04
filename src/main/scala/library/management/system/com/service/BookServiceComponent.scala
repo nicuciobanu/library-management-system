@@ -1,17 +1,17 @@
-package library.management.system.com.db.components
+package library.management.system.com.service
 
 import cats.effect.IO
-import fs2.kafka.{Deserializer, ProducerResult}
+import fs2.kafka.{KafkaConsumer, ProducerResult}
+import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
+import io.circe.syntax.EncoderOps
 import library.management.system.com.config.SettingsComponent
+import library.management.system.com.db.components.{BookRepositoryComponent, ItemRepositoryComponent}
 import library.management.system.com.model.Exceptions._
 import library.management.system.com.model.Model.{Book, BookItem}
 import library.management.system.com.queue.MessageProducerComponent
-import library.management.system.com.queue.QueueCodec.deserializer
+import library.management.system.com.queue.Model.BookItemMessage
 import library.management.system.com.util.Utils.toUUID
 import org.typelevel.log4cats.Logger
-import io.circe.syntax.EncoderOps
-import io.circe.generic.codec.DerivedAsObjectCodec.deriveCodec
-import library.management.system.com.queue.Model.BookItemMessage
 
 trait BookServiceComponent {
   this: BookRepositoryComponent with ItemRepositoryComponent with MessageProducerComponent with SettingsComponent =>
@@ -37,15 +37,11 @@ trait BookServiceComponent {
       itemRepository.getItem(barcode, tagUUID)
     }
 
-    private def publishMessage(item: BookItem)(implicit logger: Logger[IO]): IO[Either[PublishError, ProducerResult[String, String]]] = {
-      val msg = BookItemMessage.fromBookItem(item)
-      implicit val accountOperationDeserializer: Deserializer[IO, Either[DeserializationError, BookItemMessage]] =
-        deserializer[BookItemMessage]
-
+    private def publishMessage(item: BookItem)(implicit logger: Logger[IO]): IO[Either[PublishError, ProducerResult[String, String]]] =
       for {
         producerConfig <- config.appConfig.load[IO].map(_.queue.producer)
-        result         <- messageProducer.produce(msg.isbn, msg.asJson.toString())(producerConfig)
+        msg = BookItemMessage.fromBookItem(item)
+        result <- messageProducer.produce(msg.isbn, msg.asJson.toString())(producerConfig)
       } yield result
-    }
   }
 }

@@ -4,8 +4,8 @@ import cats.effect._
 import zio.json.interop.http4s.ZIOEntityCodec.zioEntityDecoder
 import org.http4s._
 import zio.json._
-import library.management.system.com.db.components.BookServiceComponent
 import library.management.system.com.http.Model.{BookRequest, ItemRequest}
+import library.management.system.com.service.BookServiceComponent
 import org.http4s.dsl.Http4sDsl
 import org.typelevel.log4cats.Logger
 

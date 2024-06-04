@@ -6,16 +6,17 @@ import library.management.system.com.model.Model.{Format, Language}
 import java.time.{LocalDate, Period}
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import scala.util.Try
 
 object Utils {
   def toLanguage(language: String): Language =
-    Language.valueOf(language) match {
+    Try(Language.valueOf(language)).toOption match {
       case Some(lang) => lang
       case _          => throw SerializationError(s"Malformed language string $language.")
     }
 
   def toFormat(format: String): Format =
-    Format.valueOf(format) match {
+    Try(Format.valueOf(format)).toOption match {
       case Some(fmt) => fmt
       case _         => throw SerializationError(s"Malformed format string $format.")
     }

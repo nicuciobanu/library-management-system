@@ -1,6 +1,7 @@
 package library.management.system.com.model
 
 import cats.effect.IO
+import library.management.system.com.model.Exceptions.SerializationError
 import org.http4s.EntityEncoder
 import zio.json.interop.http4s.jsonEncoderOf
 
@@ -31,13 +32,13 @@ object Model {
   }
 
   object Language {
-    def valueOf(name: String): Option[Language] = name match {
-      case value if value.equals("English") => Some(English)
-      case value if value.equals("French")  => Some(French)
-      case value if value.equals("German")  => Some(German)
-      case value if value.equals("Spanish") => Some(Spanish)
-      case value if value.equals("Italian") => Some(Italian)
-      case _                                => None
+    def valueOf(language: String): Language = language match {
+      case value if value.equals("English") => English
+      case value if value.equals("French")  => French
+      case value if value.equals("German")  => German
+      case value if value.equals("Spanish") => Spanish
+      case value if value.equals("Italian") => Italian
+      case _                                => throw SerializationError(s"An error while parsing language value: $language.")
     }
 
     implicit val decoder: JsonDecoder[Language] = DeriveJsonDecoder.gen[Language]
@@ -67,14 +68,14 @@ object Model {
   }
 
   object Format {
-    def valueOf(name: String): Option[Format] = name match {
-      case value if value.equals("Paperback") => Some(Paperback)
-      case value if value.equals("Hardcover") => Some(Hardcover)
-      case value if value.equals("Audiobook") => Some(Audiobook)
-      case value if value.equals("AudioCd")   => Some(AudioCd)
-      case value if value.equals("Mp3Cd")     => Some(Mp3Cd)
-      case value if value.equals("Pdf")       => Some(Pdf)
-      case _                                  => None
+    def valueOf(format: String): Format = format match {
+      case value if value.equals("Paperback") => Paperback
+      case value if value.equals("Hardcover") => Hardcover
+      case value if value.equals("Audiobook") => Audiobook
+      case value if value.equals("AudioCd")   => AudioCd
+      case value if value.equals("Mp3Cd")     => Mp3Cd
+      case value if value.equals("Pdf")       => Pdf
+      case _                                  => throw SerializationError(s"An error while parsing format value: $format.")
     }
 
     implicit val decoder: JsonDecoder[Format] = DeriveJsonDecoder.gen[Format]
