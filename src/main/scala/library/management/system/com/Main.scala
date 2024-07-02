@@ -50,37 +50,35 @@ object Main
   override def run(args: List[String]): IO[ExitCode] =
     for {
       appConfig <- config.appConfig.load[IO]
-      api      = appConfig.api
-      db       = appConfig.database
-      consumer = appConfig.queue.consumer
+      api          = appConfig.api
+      db           = appConfig.database
+      consumerConf = appConfig.queue.consumer
       _ <- migration.migrate(db.url, db.user, db.password)
       routes = bookRoutes.routes(logger)
       application: Kleisli[IO, Request[IO], Response[IO]] = Router(
         "/api/v1" -> routes
       ).orNotFound
-      server <- BlazeServerBuilder[IO]
+      kafkaConsumer = messageConsumer
+        .consume[BookItemMessage](consumerConf.server, consumerConf.group, consumerConf.topic)
+        .partitionedRecords
+        .map {
+          _.evalMap { committable =>
+            committable.record.value match {
+              case Left(error) =>
+                logger.error(s"Error while consuming message: ${error.errorMessage}!")
+                IO.pure(Left(ConsumeError(error.error)))
+              case Right(message) =>
+                logger.info(s"Message was consumed with success!")
+                val bookItem = BookItemMessage.toBookItem(message)
+                bookService.createBookItem(bookItem)
+            }
+          }
+        }
+        .parJoinUnbounded
+      server = BlazeServerBuilder[IO]
         .bindHttp(api.port, api.host)
         .withHttpApp(application)
         .serve
-        .compile
-        .drain
-        .as(ExitCode.Success)
-      _ <- messageConsumer
-        .consume[BookItemMessage](consumer)
-        .records
-        .evalMap { commit =>
-          commit.record.value match {
-            case Left(error) =>
-              logger.error(s"Error while consuming message: ${error.errorMessage}!")
-              IO.pure(Left(ConsumeError(error.error)))
-            case Right(message) =>
-              logger.info(s"Message was consumed with success!")
-              val bookItem = BookItemMessage.toBookItem(message)
-              bookService.createBookItem(bookItem)
-          }
-        }
-        .compile
-        .drain
-        .as(ExitCode.Success)
-    } yield server
+      exitCode <- kafkaConsumer.concurrently(server).compile.drain.as(ExitCode.Success)
+    } yield exitCode
 }

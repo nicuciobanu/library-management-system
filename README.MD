@@ -65,7 +65,7 @@ Add the messages to the "library-management-item-extern-topic" topic:
 
 """
 {
-"barcode" : "6bcbca1e-efd3-411d-9f7c-14b872444fcb",
+"barcode" : "6bcbca1e-efd3-411d-9f7c-14b872444fce",
 "tag" : "6baa3493-0564-40b7-9751-b2658b141a61",
 "isbn" : "6bcbca1e-efd3-411d-9f7c-14b872444fce",
 "subject" : "Fantasy",
@@ -82,7 +82,7 @@ Add the messages to the "library-management-item-extern-topic" topic:
 """
 
 Read the messages from the "library-management-item-extern-topic" topic: 
-- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-extern-topic --from-beginning --group item-extern-group --bootstrap-server localhost:9092
+- docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-extern-topic --from-beginning --bootstrap-server localhost:9092
 
 Read the messages from the "library-management-item-intern-topic" topic:
 - docker-compose exec kafka kafka-console-consumer.sh --topic library-management-item-intern-topic --from-beginning --bootstrap-server localhost:9092
