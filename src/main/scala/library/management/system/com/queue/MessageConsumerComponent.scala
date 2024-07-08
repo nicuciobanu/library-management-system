@@ -3,14 +3,13 @@ package library.management.system.com.queue
 import fs2.kafka.{Deserializer, _}
 import cats.effect.IO
 import library.management.system.com.Main.logger
-import library.management.system.com.config.Model.ConsumerConfig
+import library.management.system.com.db.components.ItemRepositoryComponent
 import library.management.system.com.model.Exceptions.{BookManagementError, ConsumeError, DeserializationError}
 import library.management.system.com.queue.Model.BookItemMessage
-import library.management.system.com.service.BookServiceComponent
 import org.typelevel.log4cats.Logger
 
 trait MessageConsumerComponent {
-  this: BookServiceComponent =>
+  this: ItemRepositoryComponent =>
 
   val messageConsumer: MessageConsumer
   trait MessageConsumer {
@@ -39,7 +38,7 @@ trait MessageConsumerComponent {
           val bookItem = BookItemMessage.toBookItem(message)
 
           for {
-            item <- bookService.createBookItem(bookItem)
+            item <- itemRepository.createItem(bookItem)
             _ <- logger.info(s"Kafka external item with isbn ${bookItem.isbn} and tag ${bookItem.tag} was consumed with success!")
           } yield item
       }

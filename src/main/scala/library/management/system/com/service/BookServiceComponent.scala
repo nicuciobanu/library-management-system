@@ -32,7 +32,6 @@ trait BookServiceComponent {
         _      <- bookRepository.getBook(item.isbn, item.subject)
         result <- itemRepository.createItem(item)
         _      <- publishMessage(item)
-        _      <- publishMessageToExternalTopic(item) // we will use this method instead of adding manually messages to the external topic
       } yield result
 
     def getBookItem(barcode: String, tag: String)(implicit logger: Logger[IO]): IO[Either[SearchError, BookItem]] = {
