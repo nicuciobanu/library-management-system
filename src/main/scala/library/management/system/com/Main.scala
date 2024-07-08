@@ -10,7 +10,7 @@ import library.management.system.com.config.SettingsComponent
 import library.management.system.com.db._
 import library.management.system.com.db.components._
 import library.management.system.com.http.BookRoutesComponent
-import library.management.system.com.model.Exceptions.{ConsumeError, DeserializationError}
+import library.management.system.com.model.Exceptions.DeserializationError
 import library.management.system.com.queue.Model.BookItemMessage
 import library.management.system.com.queue.QueueCodec.deserializer
 import library.management.system.com.queue._
@@ -60,21 +60,7 @@ object Main
       ).orNotFound
       kafkaConsumer = messageConsumer
         .consume[BookItemMessage](consumerConf.server, consumerConf.group, consumerConf.topic)
-        .partitionedRecords
-        .map {
-          _.evalMap { committable =>
-            committable.record.value match {
-              case Left(error) =>
-                logger.error(s"Error while consuming message: ${error.errorMessage}!")
-                IO.pure(Left(ConsumeError(error.error)))
-              case Right(message) =>
-                logger.info(s"Message was consumed with success!")
-                val bookItem = BookItemMessage.toBookItem(message)
-                bookService.createBookItem(bookItem)
-            }
-          }
-        }
-        .parJoinUnbounded
+        .records.evalMap(committable => messageConsumer.processExternalItems(committable))
       server = BlazeServerBuilder[IO]
         .bindHttp(api.port, api.host)
         .withHttpApp(application)
